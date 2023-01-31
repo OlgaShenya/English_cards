@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/style.css">
+    <title>my vocab</title>
+</head>
+
+<body>
+    <div class="container-xl border h-100">
+        <header class="row d-flex align-items-center bg-success bg-gradient" style="height: 10%;">
+            <div class="col-2">
+                <img src="images/book.svg" alt="book" style="transform: rotate(-35deg);">
+            </div>
+            <div class="col text-center">
+                <h1 class="fs-1 fw-bold">My vocabulary</h1>
+            </div>
+            <div class="col-2">
+                <div class="row">
+                    <div class="col text-end">
+                        <button type="button" class="btn btn-success fs-4 fw-semibold text-dark"
+                            style="border: 2px solid black">logout</button>
+                    </div>
+                </div>
+                <div class="row pt-1">
+                    <div class="col text-end overflow-hidden">
+                        <span
+                            class="fs-4 fw-semibold"><!-- dynamic userName -->user1ффффффффффффффффффффффффффффффффффффф</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="row bg-success bg-opacity-10 bg-gradient" style="height: 88%;">
+            <aside class="col col-xl-2 border-end border-success border-3">
+                <h2 class="text-decoration-underline fs-4 fw-semibold">My lists</h2>
+                <nav class="fs-4 fw-semibold">
+                    <!-- dynamic content (ul-li, ul-li...) -->
+                    <ul>
+                        <li>list1
+                            <ul>
+                                <li>sub</li>
+                                <li>sub</li>
+                                <li>sub</li>
+                            </ul>
+                        </li>
+                        <li>list1
+                            <ul>
+                                <li>sub</li>
+                                <li>sub</li>
+                                <li>sub</li>
+                            </ul>
+                        </li>
+                        <li>list1
+                            <ul>
+                                <li>sub</li>
+                                <li>sub</li>
+                                <li>sub</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </nav>
+            </aside>
+            <section class="col col-10">
+                <div class="row  p-2" style="height: 10%;">
+                    <div class="col ">
+                        <button class="btn btn-success text-dark fs-4 fw-semibold float-end">
+                            Create a new list
+                        </button>
+                        <h2 class="text-center fs-2 fw-bolder">List1<!-- dynamic title --></h2>
+                    </div>
+                </div>
+                <div class="row" style="height: 80%;">
+                    <div class="col col-5 h-100 d-flex align-items-center">
+                        <div class="card h-50 mx-auto" style="width: 90%;">
+                            <div class="card-body">
+                                <!-- dynamic content -->
+                            </div>
+                        </div>
+                    </div>
+                    <img class="col col-1" src="images/question.svg" alt="">
+                    <div class="col h-100">
+                        <div class="row h-50">
+                            <div class="col col-9 h-100 d-flex align-items-center">
+                                <div class="card h-75 mx-auto" style="width: 90%;">
+                                    <div class="card-body">
+                                        <!-- dynamic content -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col col-1">
+                                <img class="mt-5" src="images/check-mark-4818 (1).svg" alt="">
+                            </div>
+                        </div>
+
+                        <div class="row h-50">
+                            <div class="col col-9 h-100 d-flex align-items-center">
+                                <div class="card h-75 mx-auto" style="width: 90%;">
+                                    <div class="card-body">
+                                        <!-- dynamic content -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col col-1">
+                                <img class="mt-5" src="images/no (1).svg" alt="">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row float-end pt-2" style="height: 10%;">
+                    <div class="col ">
+                        <button type="button " class="btn btn-success text-dark fs-4 fw-semibold">learn all
+                            again</button>
+                        <button type="button " class="btn btn-success text-dark fs-4 fw-semibold">learn only
+                            unsolved</button>
+                        <button type="button " class="btn btn-success text-dark fs-4 fw-semibold">Edit this
+                            list</button>
+                    </div>
+            </section>
+        </main>
+
+        <footer class="row bg-success bg-gradient" style="height: 2%;">footer</footer>
+
+    </div>
+</body>
+
+</html>
