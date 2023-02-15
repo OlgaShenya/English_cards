@@ -112,23 +112,14 @@ module.exports.GetLists = async (UserId) => {
     return JSON.parse(JSON.stringify(list));
   } catch (error) {
     logger.error(error);
-    return false;
-  }
-};
-
-module.exports.GetList = async (id) => {
-  try {
-    return await Word.findAll({ where: { ListId: id } });
-  } catch (error) {
-    logger.error(error);
     return null;
   }
 };
 
 module.exports.RenameList = async (id, name) => {
   try {
-    await List.update({ name: name }, { where: { id: id } });
-    return true;
+    const result = await List.update({ name: name }, { where: { id: id } });
+    return result > 0;
   } catch (error) {
     logger.error(error);
     return false;
@@ -144,10 +135,40 @@ module.exports.DeleteList = async (id) => {
     return false;
   }
 };
+module.exports.GetList = async (id) => {
+  try {
+    const list = await List.findOne({ where: { id } });
+    return list;
+  } catch (error) {
+    logger.error(error);
+    return null;
+  }
+};
+
 // --------------------------------------------Word----------------------------------------
+
+module.exports.GetWords = async (ListId) => {
+  try {
+    return await Word.findAll({ where: { ListId } });
+  } catch (error) {
+    logger.error(error);
+    return null;
+  }
+};
+
+module.exports.GetWord = async (id) => {
+  try {
+    const word = await Word.findOne({ where: { id } });
+    return word;
+  } catch (error) {
+    logger.error(error);
+    return null;
+  }
+};
 
 module.exports.CreateWord = async (word, meaning, studied, ListId) => {
   try {
+    await List.sync();
     await Word.create({
       word: word,
       meaning: meaning,
@@ -163,8 +184,8 @@ module.exports.CreateWord = async (word, meaning, studied, ListId) => {
 
 module.exports.UpdateWord = async (id, wordParams) => {
   try {
-    await Word.update(wordParams, { where: { id: id } });
-    return true;
+    const updatedCount = await Word.update(wordParams, { where: { id } });
+    return updatedCount > 0;
   } catch (error) {
     logger.error(error);
     return false;
@@ -173,7 +194,8 @@ module.exports.UpdateWord = async (id, wordParams) => {
 
 module.exports.DeleteWord = async (id) => {
   try {
-    await Word.destroy({ where: { id: id } });
+    const result = await Word.destroy({ where: { id: id } });
+    return true;
   } catch (error) {
     logger.error(error);
     return false;
