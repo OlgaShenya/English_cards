@@ -5,6 +5,8 @@ const app = express();
 const jwt = require("jsonwebtoken");
 const { dirname } = require("path");
 const appDir = dirname(require.main.filename);
+const cors = require("cors");
+app.use(cors());
 
 const signature = "MySuP3R_z3kr3t";
 

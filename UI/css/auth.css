@@ -1,0 +1,18 @@
+#auth_form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 300px;
+  border: 1px solid black;
+  padding: 10px;
+  position: absolute;
+  top: 30vh;
+  left: 45%;
+  background-color: grey;
+  visibility: visible;
+}
+
+#login,
+#password {
+  color: grey;
+}/*# sourceMappingURL=auth.css.map */
