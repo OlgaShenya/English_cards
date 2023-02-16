@@ -1,8 +1,9 @@
-const authForm = document.getElementById("auth_form");
 const loginInput = document.getElementById("login");
 const passwordInput = document.getElementById("password");
 const signinButton = document.getElementById("signin");
 const signupButton = document.getElementById("signup");
+const authForm = new bootstrap.Modal(document.getElementById("auth_form"));
+if (!localStorage.token) authForm.show();
 
 const handleSignin = () => {
   fetch("http://localhost:3000/api/auth", {
@@ -21,9 +22,8 @@ const handleSignin = () => {
         alert(data.error);
         return;
       }
+      authForm.hide();
       localStorage.setItem("token", data.token);
-      authForm.style.visibility = "hidden";
-      location.reload();
     })
     .catch((error) => alert(error.message));
 };
