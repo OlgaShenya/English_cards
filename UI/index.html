@@ -38,32 +38,10 @@
 
         <main class="row bg-success bg-opacity-10 bg-gradient" style="height: 88%;">
             <aside class="col col-xl-2 border-end border-success border-3">
-                <h2 class="text-decoration-underline fs-4 fw-semibold">My lists</h2>
-                <nav class="fs-4 fw-semibold">
+                <h2 class="text-decoration-underline fs-3 fw-semibold mt-2">My lists</h2>
+                <nav class="fs-4 fw-semibold"  id="myLists">
                     <!-- dynamic content (ul-li, ul-li...) -->
-                    <ul>
-                        <li>list1
-                            <ul>
-                                <li>sub</li>
-                                <li>sub</li>
-                                <li>sub</li>
-                            </ul>
-                        </li>
-                        <li>list1
-                            <ul>
-                                <li>sub</li>
-                                <li>sub</li>
-                                <li>sub</li>
-                            </ul>
-                        </li>
-                        <li>list1
-                            <ul>
-                                <li>sub</li>
-                                <li>sub</li>
-                                <li>sub</li>
-                            </ul>
-                        </li>
-                    </ul>
+
                 </nav>
             </aside>
             <section class="col col-10">
@@ -78,12 +56,12 @@
                 <div class="row" style="height: 80%;">
                     <div class="col col-5 h-100 d-flex align-items-center">
                         <div class="card h-50 mx-auto" style="width: 90%;">
-                            <div class="card-body">
+                            <div class="card-body" id="allCards">
                                 <!-- dynamic content -->
                             </div>
                         </div>
                     </div>
-                    <img class="col col-1" src="images/question.svg" alt="">
+                    <img class="col col-1" src="images/question.svg" alt="" id="head">
                     <div class="col h-100">
                         <div class="row h-50">
                             <div class="col col-9 h-100 d-flex align-items-center">
@@ -125,45 +103,10 @@
         </main>
 
         <footer class="row bg-success bg-gradient" style="height: 2%;">footer</footer>
+    </div>
 
-    </div>
-    <!-- <div id="auth_form" class="modal-dialog modal-lg">
-        <div class="group">
-          <label for="login" class="fs-4 fw-semibold pb-2">login</label>
-          <input type="text" id="login" name="login" value="your login" class="fs-4 fw-semibold">
-        </div>
-        <div class="group">
-          <label for="password" class="fs-4 fw-semibold pb-2">Password</label>
-          <input type="password" id="password" name="password" value="your password" class="fs-4 fw-semibold">
-        </div>
-        <button id="signin" type="button " class="btn btn-success text-dark fs-4 fw-semibold">Log in</button>
-        <button id="signup" type="button " class="btn btn-success text-dark fs-4 fw-semibold">Sign up</button>
-    </div> -->
-    <div class="modal fade " data-bs-backdrop="static" tabindex="-1" id="auth_form" data-bs-keyboard="false" aria-labelledby="staticBackdropLabel"  aria-hidden="true">
-        <div class="modal-dialog  modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title fs-3 fw-semibold text-center">Sign up/in form</h2>
-            </div>
-            <div class="modal-body">
-                <div class="input-group input-group-lg mb-3 ">
-                    <span class="input-group-text">Login</span>
-                    <input type="text" class="form-control" placeholder="your login" id="login" >
-                </div>
-                <div class="input-group input-group-lg mb-3">
-                    <span class="input-group-text">Password</span>
-                    <input type="password" class="form-control" placeholder="your password" id="password">
-                </div>  
-            </div>
-            <div class="modal-footer">
-                <button id="signin" type="button " class="btn btn-outline-success text-dark fs-5 fw-semibold">Sign in</button>
-                <button id="signup" type="button " class="btn btn-outline-success text-dark fs-5 fw-semibold">Sign up</button>
-            </div> 
-          </div>
-        </div>
-    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 
 </html>

@@ -91,7 +91,7 @@ app.post("/api/lists", async (request, response) => {
 app.get("/api/lists", async (request, response) => {
   const lists = await db.GetLists(request.user.id);
   if (lists) {
-    response.json(lists);
+    response.json({ Lists: lists });
   } else {
     response.status(500).json({ error: "Impossible to get list" });
   }
