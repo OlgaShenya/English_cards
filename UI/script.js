@@ -4,6 +4,9 @@ import { Init } from "./auth.js";
 const myLists = document.getElementById("myLists");
 const allCards = document.getElementById("allCards");
 const head = document.getElementById("head");
+const frontCard = document.getElementById("frontCard");
+const backCard = document.getElementById("backCard");
+const card = document.getElementById("card");
 
 Init();
 const cards = [];
@@ -25,9 +28,9 @@ const loadCards = (event) => {
         return;
       }
       cards.push(...data.Words);
-      cards.forEach((element) => {
-        element.flipped = false;
-      });
+      // cards.forEach((element) => {
+      //   element.flipped = false;
+      // });
       genWord = cardSwitcher(cards);
       getCard();
       showCard();
@@ -49,12 +52,14 @@ const showCard = () => {
     allCards.innerHTML = "";
     return;
   }
-  if (!currentCard.flipped) {
-    allCards.innerHTML = currentCard.word;
-  } else {
-    allCards.innerHTML = currentCard.meaning;
-  }
-  currentCard.flipped = !currentCard.flipped;
+  // if (!currentCard.flipped) {
+  //   allCards.innerHTML = currentCard.word;
+  // } else {
+  //   allCards.innerHTML = currentCard.meaning;
+  // }
+  // currentCard.flipped = !currentCard.flipped;
+  frontCard.innerHTML = currentCard.word;
+  backCard.innerHTML = currentCard.meaning;
 };
 
 const nextCard = () => {
@@ -108,7 +113,10 @@ const renderLists = () => {
 renderLists();
 
 myLists.addEventListener("click", loadCards);
-allCards.addEventListener("click", showCard);
+allCards.addEventListener("click", () => {
+  showCard();
+  card.classList.toggle("is-flipped");
+});
 head.addEventListener("click", nextCard);
 myLists.addEventListener("mouseover", (event) => {
   const target = event.target.parentElement.nextElementSibling;
