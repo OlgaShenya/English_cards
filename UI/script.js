@@ -8,13 +8,8 @@ const frontCard = document.getElementById("frontCard");
 const backCard = document.getElementById("backCard");
 const card = document.getElementById("card");
 const solvedCards = document.getElementById("solvedCards");
+const unSolvedCards = document.getElementById("unSolvedCards");
 
-const doAfterLoad = () => {
-  renderLists();
-  console.log("ok");
-};
-
-authInit(doAfterLoad);
 const cards = [];
 let genWord = null;
 let currentCard = null;
@@ -110,11 +105,18 @@ const renderLists = () => {
     .then((data) => {
       if (data.error !== undefined) {
         alert(data.error);
+        return;
       }
       showMyLists(data.Lists);
     })
     .catch((error) => console.log(error));
 };
+
+const doAfterLoad = () => {
+  renderLists();
+};
+
+authInit(doAfterLoad);
 
 const allowDrop = (event) => {
   event.preventDefault();
@@ -122,17 +124,31 @@ const allowDrop = (event) => {
 
 const drag = (event) => {
   event.dataTransfer.setData("id", event.target.id);
-  console.log(event.dataTransfer);
+  event.target.classList.remove("is-flipped");
 };
 
 const drop = (event) => {
   let itemId = event.dataTransfer.getData("id");
-  event.target.append(document.getElementById(itemId));
+
+  let target = event.target;
+  while (target !== solvedCards && target !== unSolvedCards) {
+    target = target.parentElement;
+  }
+
+  target.innerHTML = "";
+  let clonedCard = document.getElementById(itemId).cloneNode(true);
+  clonedCard.classList.remove("is-flipped");
+  clonedCard.removeAttribute("draggable");
+  clonedCard.removeAttribute("id");
+  target.append(clonedCard);
+  nextCard();
 };
 
 solvedCards.ondragover = allowDrop;
+unSolvedCards.ondragover = allowDrop;
 card.ondragstart = drag;
 solvedCards.ondrop = drop;
+unSolvedCards.ondrop = drop;
 
 myLists.addEventListener("click", loadCards);
 allCards.addEventListener("click", () => {
