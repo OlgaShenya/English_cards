@@ -32,6 +32,8 @@ const signinButton = document.getElementById("signin");
 const signupButton = document.getElementById("signup");
 const authForm = new bootstrap.Modal(document.getElementById("auth_form"));
 
+let afterAuth = null;
+
 const handleSignin = () => {
   fetch("http://localhost:3000/api/auth", {
     method: "POST",
@@ -51,6 +53,7 @@ const handleSignin = () => {
       }
       authForm.hide();
       localStorage.setItem("token", data.token);
+      afterAuth();
     })
     .catch((error) => alert(error.message));
 };
@@ -77,8 +80,13 @@ const handleSignup = () => {
     .catch((error) => alert(error.message));
 };
 
-export const Init = () => {
-  if (!localStorage.token) authForm.show();
+export const authInit = (callback) => {
+  if (!localStorage.token) {
+    authForm.show();
+    afterAuth = callback;
+  } else {
+    callback();
+  }
   signinButton.addEventListener("click", handleSignin);
   signupButton.addEventListener("click", handleSignup);
 };
