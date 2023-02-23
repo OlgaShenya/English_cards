@@ -7,6 +7,7 @@ const head = document.getElementById("head");
 const frontCard = document.getElementById("frontCard");
 const backCard = document.getElementById("backCard");
 const card = document.getElementById("card");
+const solvedCards = document.getElementById("solvedCards");
 
 Init();
 const cards = [];
@@ -111,6 +112,24 @@ const renderLists = () => {
 };
 
 renderLists();
+
+const allowDrop = (event) => {
+  event.preventDefault();
+};
+
+const drag = (event) => {
+  event.dataTransfer.setData("id", event.target.id);
+  console.log(event.dataTransfer);
+};
+
+const drop = (event) => {
+  let itemId = event.dataTransfer.getData("id");
+  event.target.append(document.getElementById(itemId));
+};
+
+solvedCards.ondragover = allowDrop;
+card.ondragstart = drag;
+solvedCards.ondrop = drop;
 
 myLists.addEventListener("click", loadCards);
 allCards.addEventListener("click", () => {
