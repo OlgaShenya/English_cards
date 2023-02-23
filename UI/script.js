@@ -9,7 +9,12 @@ const backCard = document.getElementById("backCard");
 const card = document.getElementById("card");
 const solvedCards = document.getElementById("solvedCards");
 
-Init();
+const doAfterLoad = () => {
+  renderLists();
+  console.log("ok");
+};
+
+authInit(doAfterLoad);
 const cards = [];
 let genWord = null;
 let currentCard = null;
@@ -110,8 +115,6 @@ const renderLists = () => {
     })
     .catch((error) => console.log(error));
 };
-
-renderLists();
 
 const allowDrop = (event) => {
   event.preventDefault();
