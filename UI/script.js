@@ -11,10 +11,13 @@ const unSolvedCards = document.getElementById("unSolvedCards");
 const userName = document.getElementById("userName");
 const logoutBtn = document.getElementById("logoutBtn");
 const allCardsCount = document.getElementById("allCardsCount");
+const cardsSolvedCount = document.getElementById("cardsSolvedCount");
+const cardsUnsolvedCount = document.getElementById("cardsUnsolvedCount");
 
 const cards = [];
 let genWord = null;
 let currentCard = null;
+const unsolvedCards = [];
 
 const requestWords = async (listId) => {
   try {
@@ -46,6 +49,9 @@ const loadCards = (event) => {
     showCard();
     solvedCards.innerHTML = "";
     unSolvedCards.innerHTML = "";
+    cardsSolvedCount.textContent = "";
+    unsolvedCards.splice(0, unsolvedCards.length);
+    cardsUnsolvedCount.textContent = "";
   });
 };
 
@@ -150,18 +156,24 @@ const drag = (event) => {
 
 const drop = (event) => {
   let itemId = event.dataTransfer.getData("id");
-
   let target = event.target;
   while (target !== solvedCards && target !== unSolvedCards) {
     target = target.parentElement;
   }
-
   target.innerHTML = "";
   let clonedCard = document.getElementById(itemId).cloneNode(true);
   clonedCard.classList.remove("is-flipped");
   clonedCard.removeAttribute("draggable");
   clonedCard.removeAttribute("id");
   target.append(clonedCard);
+
+  if (target === solvedCards) {
+    let a = +cardsSolvedCount.textContent;
+    cardsSolvedCount.textContent = 1 + a;
+  } else {
+    unsolvedCards.push(currentCard);
+    cardsUnsolvedCount.textContent = unsolvedCards.length;
+  }
   nextCard();
 };
 
