@@ -10,6 +10,7 @@ const solvedCards = document.getElementById("solvedCards");
 const unSolvedCards = document.getElementById("unSolvedCards");
 const userName = document.getElementById("userName");
 const logoutBtn = document.getElementById("logoutBtn");
+const allCardsCount = document.getElementById("allCardsCount");
 
 const cards = [];
 let genWord = null;
@@ -38,6 +39,7 @@ const requestWords = async (listId) => {
 const loadCards = (event) => {
   const listId = event.target.getAttribute("listid");
   requestWords(listId).then((words) => {
+    cards.splice(0, cards.length);
     cards.push(...words);
     genWord = cardSwitcher(cards);
     getCard();
@@ -48,6 +50,7 @@ const loadCards = (event) => {
 };
 
 const getCard = () => {
+  allCardsCount.textContent = cards.length;
   let a = genWord.next();
   if (!a.done) {
     currentCard = a.value;
