@@ -35,6 +35,8 @@ const authForm = new bootstrap.Modal(document.getElementById("auth_form"));
 let afterAuth = null;
 
 const handleSignin = () => {
+  let pass = passwordInput.value;
+  passwordInput.value = "";
   fetch("http://localhost:3000/api/auth", {
     method: "POST",
     headers: {
@@ -42,7 +44,7 @@ const handleSignin = () => {
     },
     body: JSON.stringify({
       login: loginInput.value,
-      password: passwordInput.value,
+      password: pass,
     }),
   })
     .then((response) => response.json())
@@ -53,6 +55,7 @@ const handleSignin = () => {
       }
       authForm.hide();
       localStorage.setItem("token", data.token);
+      localStorage.setItem("userName", loginInput.value);
       afterAuth();
     })
     .catch((error) => alert(error.message));
@@ -80,10 +83,14 @@ const handleSignup = () => {
     .catch((error) => alert(error.message));
 };
 
+export const authorize = () => {
+  authForm.show();
+};
+
 export const authInit = (callback) => {
+  afterAuth = callback;
   if (!localStorage.token) {
     authForm.show();
-    afterAuth = callback;
   } else {
     callback();
   }

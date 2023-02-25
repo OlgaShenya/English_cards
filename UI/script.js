@@ -1,42 +1,50 @@
-import { authInit } from "./auth.js";
+import { authInit, authorize } from "./auth.js";
 // import { Card } from "./card.js";
 
 const myLists = document.getElementById("myLists");
 const allCards = document.getElementById("allCards");
-const head = document.getElementById("head");
 const frontCard = document.getElementById("frontCard");
 const backCard = document.getElementById("backCard");
 const card = document.getElementById("card");
 const solvedCards = document.getElementById("solvedCards");
 const unSolvedCards = document.getElementById("unSolvedCards");
+const userName = document.getElementById("userName");
+const logoutBtn = document.getElementById("logoutBtn");
 
 const cards = [];
 let genWord = null;
 let currentCard = null;
 
+const requestWords = async (listId) => {
+  try {
+    const response = await fetch(
+      `http://localhost:3000/api/lists/${listId}/words`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: localStorage.token,
+        },
+      }
+    );
+    const body = await response.json();
+    if (body.error !== undefined) {
+      alert(data.error);
+    }
+    return body.Words;
+  } catch (error) {
+    console.log(error);
+  }
+};
 const loadCards = (event) => {
   const listId = event.target.getAttribute("listid");
-  fetch(`http://localhost:3000/api/lists/${listId}/words`, {
-    method: "GET",
-    headers: {
-      Authorization: localStorage.token,
-    },
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.error !== undefined) {
-        alert(data.error);
-        return;
-      }
-      cards.push(...data.Words);
-      // cards.forEach((element) => {
-      //   element.flipped = false;
-      // });
-      genWord = cardSwitcher(cards);
-      getCard();
-      showCard();
-    })
-    .catch((error) => console.log(error));
+  requestWords(listId).then((words) => {
+    cards.push(...words);
+    genWord = cardSwitcher(cards);
+    getCard();
+    showCard();
+    solvedCards.innerHTML = "";
+    unSolvedCards.innerHTML = "";
+  });
 };
 
 const getCard = () => {
@@ -49,16 +57,13 @@ const getCard = () => {
 };
 
 const showCard = () => {
-  if (currentCard === null) {
-    allCards.innerHTML = "";
+  if (!currentCard) {
+    card.classList.add("d-none");
+    frontCard.innerHTML = "";
+    backCard.innerHTML = "";
     return;
   }
-  // if (!currentCard.flipped) {
-  //   allCards.innerHTML = currentCard.word;
-  // } else {
-  //   allCards.innerHTML = currentCard.meaning;
-  // }
-  // currentCard.flipped = !currentCard.flipped;
+  card.classList.remove("d-none");
   frontCard.innerHTML = currentCard.word;
   backCard.innerHTML = currentCard.meaning;
 };
@@ -69,28 +74,40 @@ const nextCard = () => {
 };
 
 function* cardSwitcher(arr) {
-  for (let i = 0; i < arr.length; i++) {
-    yield arr[i];
+  for (let card = cards.pop(); card; card = cards.pop()) {
+    yield card;
   }
 }
 
-const showMyLists = (lists) => {
-  let liLists = "";
-  lists.forEach((element) => {
-    liLists += `
-    <div class="accordion accordion-flush" id="accordionFlushExample_${element.id}">
-      <div class="accordion-item ">
-        <h2 class="accordion-header " id="flush-headingOne ">
-        <button class="accordion-button collapsed bg-success bg-opacity-10 fs-5 fw-semibold" type="button"  data-bs-target="#flush-collapseOne_${element.id}"    aria-controls="flush-collapseOne_${element.id}" listid="${element.id}">
-        ${element.name}
-        </button>
-        </h2>
-      <div id="flush-collapseOne_${element.id}" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample_${element.id}">
-      <div class="accordion-body">Placeholder <br>content <br>for this <br>accordion, <br>which is <br>intended </div>
-    </div>
-  </div>
-  </div>`;
+const createListNode = async (listId, listName) => {
+  let listWords = "";
+  let words = await requestWords(listId);
+
+  words.forEach((word) => {
+    listWords += `${word.word}<br>`;
   });
+  return `
+<div class="accordion accordion-flush" id="accordionFlushExample_${listId}">
+  <div class="accordion-item ">
+    <h2 class="accordion-header " id="flush-headingOne ">
+    <button class="accordion-button collapsed bg-success bg-opacity-10 fs-5 fw-semibold" type="button"  data-bs-target="#flush-collapseOne_${listId}"    aria-controls="flush-collapseOne_${listId}" listid="${listId}">
+    ${listName}
+    </button>
+    </h2>
+  <div id="flush-collapseOne_${listId}" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample_${listId}">
+  <div class="accordion-body">${listWords}</div>
+</div>
+</div>
+</div>`;
+};
+
+const showMyLists = async (lists) => {
+  let liLists = "";
+  for (let i = 0; i < lists.length; i++) {
+    let listNode = await createListNode(lists[i].id, lists[i].name);
+    liLists += listNode;
+  }
+
   myLists.innerHTML = liLists;
 };
 
@@ -114,6 +131,7 @@ const renderLists = () => {
 
 const doAfterLoad = () => {
   renderLists();
+  userName.textContent = localStorage.getItem("userName");
 };
 
 authInit(doAfterLoad);
@@ -150,12 +168,29 @@ card.ondragstart = drag;
 solvedCards.ondrop = drop;
 unSolvedCards.ondrop = drop;
 
+const clearPage = () => {
+  myLists.innerHTML = "";
+  userName.textContent = "";
+  frontCard.innerHTML = "";
+  backCard.innerHTML = "";
+  unSolvedCards.innerHTML = "";
+  solvedCards.innerHTML = "";
+  card.classList.add("d-none");
+  cards.splice(0, cards.length);
+  currentCard = null;
+};
+
+const logout = () => {
+  localStorage.removeItem("token");
+  authorize();
+  clearPage();
+};
+
 myLists.addEventListener("click", loadCards);
 allCards.addEventListener("click", () => {
   showCard();
-  card.classList.toggle("is-flipped");
+  if (currentCard) card.classList.toggle("is-flipped");
 });
-head.addEventListener("click", nextCard);
 myLists.addEventListener("mouseover", (event) => {
   const target = event.target.parentElement.nextElementSibling;
   if (!target) return;
@@ -166,3 +201,4 @@ myLists.addEventListener("mouseout", (event) => {
   if (!target) return;
   target.classList.remove("show");
 });
+logoutBtn.addEventListener("click", logout);

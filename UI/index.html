@@ -23,14 +23,13 @@
             <div class="col-2">
                 <div class="row">
                     <div class="col text-end">
-                        <button type="button" class="btn btn-success fs-4 fw-semibold text-dark"
+                        <button type="button" class="btn btn-success fs-4 fw-semibold text-dark" id="logoutBtn"
                             style="border: 2px solid black">logout</button>
                     </div>
                 </div>
                 <div class="row pt-1">
                     <div class="col text-end overflow-hidden">
-                        <span
-                            class="fs-4 fw-semibold"><!-- dynamic userName -->user1ффффффффффффффффффффффффффффффффффффф</span>
+                        <span class="fs-4 fw-semibold" id="userName"><!-- dynamic userName --></span>
                     </div>
                 </div>
             </div>
@@ -56,7 +55,7 @@
                     <div class="col col-5 h-100 d-flex align-items-center">
                         <div class="card h-50 mx-auto" style="width: 90%;">
                             <div class="card-body card__scene" id="allCards">   
-                                <div class="card__content" id="card" draggable="true">                          
+                                <div class="card__content d-none" id="card" draggable="true">                          
                                     <div class="card__face card__face-front bg-success bg-opacity-10 fs-1 fw-semibold d-flex align-items-center justify-content-center" id="frontCard"><!-- dynamic content --></div>
                                     <div class="card__face card__face-back bg-success bg-opacity-10 fs-2 fw-semibold fw-semibold d-flex align-items-center justify-content-center" id="backCard"><!-- dynamic content --></div>
                                 </div>   
