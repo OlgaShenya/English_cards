@@ -193,6 +193,10 @@ const clearPage = () => {
   card.classList.add("d-none");
   cards.splice(0, cards.length);
   currentCard = null;
+  cardsSolvedCount.textContent = "";
+  cardsUnsolvedCount.textContent = "";
+  allCardsCount.textContent = "";
+  unsolvedCards.splice(0, cards.length);
 };
 
 const logout = () => {
