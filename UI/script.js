@@ -13,6 +13,8 @@ const logoutBtn = document.getElementById("logoutBtn");
 const allCardsCount = document.getElementById("allCardsCount");
 const cardsSolvedCount = document.getElementById("cardsSolvedCount");
 const cardsUnsolvedCount = document.getElementById("cardsUnsolvedCount");
+const learnAllBtn = document.getElementById("learnAllBtn");
+const learnUnsolvedBtn = document.getElementById("learnUnsolvedBtn");
 
 const cards = [];
 let genWord = null;
@@ -39,29 +41,33 @@ const requestWords = async (listId) => {
     console.log(error);
   }
 };
-const loadCards = (event) => {
-  const listId = event.target.getAttribute("listid");
-  requestWords(listId).then((words) => {
+
+const startLesson = () => {
+  genWord = cardSwitcher(cards);
+  getCard();
+  showCard();
+  solvedCards.innerHTML = "";
+  unSolvedCards.innerHTML = "";
+  cardsSolvedCount.textContent = "";
+  unsolvedCards.splice(0, unsolvedCards.length);
+  cardsUnsolvedCount.textContent = "";
+};
+
+const loadCards = async (listId) => {
+  return requestWords(listId).then((words) => {
     cards.splice(0, cards.length);
     cards.push(...words);
-    genWord = cardSwitcher(cards);
-    getCard();
-    showCard();
-    solvedCards.innerHTML = "";
-    unSolvedCards.innerHTML = "";
-    cardsSolvedCount.textContent = "";
-    unsolvedCards.splice(0, unsolvedCards.length);
-    cardsUnsolvedCount.textContent = "";
   });
 };
 
 const getCard = () => {
-  allCardsCount.textContent = cards.length;
   let a = genWord.next();
   if (!a.done) {
-    currentCard = a.value;
+    currentCard = a.value.card;
+    allCardsCount.textContent = a.value.length;
   } else {
     currentCard = null;
+    allCardsCount.textContent = "";
   }
 };
 
@@ -83,8 +89,8 @@ const nextCard = () => {
 };
 
 function* cardSwitcher(arr) {
-  for (let card = cards.pop(); card; card = cards.pop()) {
-    yield card;
+  for (let i = 0; i < arr.length; i++) {
+    yield { card: arr[i], length: arr.length - i };
   }
 }
 
@@ -205,7 +211,11 @@ const logout = () => {
   clearPage();
 };
 
-myLists.addEventListener("click", loadCards);
+myLists.addEventListener("click", (event) => {
+  loadCards(event.target.getAttribute("listid")).then(() => {
+    startLesson();
+  });
+});
 allCards.addEventListener("click", () => {
   showCard();
   if (currentCard) card.classList.toggle("is-flipped");
@@ -221,3 +231,9 @@ myLists.addEventListener("mouseout", (event) => {
   target.classList.remove("show");
 });
 logoutBtn.addEventListener("click", logout);
+learnAllBtn.addEventListener("click", startLesson);
+learnUnsolvedBtn.addEventListener("click", () => {
+  cards.splice(0, cards.length);
+  cards.push(...unsolvedCards);
+  startLesson();
+});
