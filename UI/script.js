@@ -1,4 +1,5 @@
 import { authInit, authorize } from "./auth.js";
+import { editList } from "./editList.js";
 // import { Card } from "./card.js";
 
 const myLists = document.getElementById("myLists");
@@ -15,10 +16,14 @@ const cardsSolvedCount = document.getElementById("cardsSolvedCount");
 const cardsUnsolvedCount = document.getElementById("cardsUnsolvedCount");
 const learnAllBtn = document.getElementById("learnAllBtn");
 const learnUnsolvedBtn = document.getElementById("learnUnsolvedBtn");
+const editListBtn = document.getElementById("editListBtn");
+const currentListName = document.getElementById("currentListName");
 
+const lists = [];
 const cards = [];
 let genWord = null;
 let currentCard = null;
+let currentListIndex = -1;
 const unsolvedCards = [];
 
 const requestWords = async (listId) => {
@@ -53,13 +58,27 @@ const startLesson = () => {
   cardsUnsolvedCount.textContent = "";
 };
 
-const loadCards = async (listId) => {
-  return requestWords(listId).then((words) => {
-    cards.splice(0, cards.length);
-    cards.push(...words);
+/**
+ * Загрузка слов в карточки из массива слов words
+ */
+const setCards = (words) => {
+  cards.splice(0, cards.length);
+  cards.push(...words);
+};
+
+/**
+ * Загружает объект текущего листа в глобальную переменную currentListIndex
+ */
+const updateCurrentListIndex = (listId) => {
+  currentListIndex = lists.findIndex((item) => {
+    return item.id === listId;
   });
 };
 
+/**
+ * Кладет следующую карточку в currentCard
+ * Обновляет счетчик
+ */
 const getCard = () => {
   let a = genWord.next();
   if (!a.done) {
@@ -105,12 +124,12 @@ const createListNode = async (listId, listName) => {
 <div class="accordion accordion-flush" id="accordionFlushExample_${listId}">
   <div class="accordion-item ">
     <h2 class="accordion-header " id="flush-headingOne ">
-    <button class="accordion-button collapsed bg-success bg-opacity-10 fs-5 fw-semibold" type="button"  data-bs-target="#flush-collapseOne_${listId}"    aria-controls="flush-collapseOne_${listId}" listid="${listId}">
+    <button class="accordion-button collapsed bg-success bg-opacity-10 fs-4 fw-semibold" type="button"  data-bs-target="#flush-collapseOne_${listId}"    aria-controls="flush-collapseOne_${listId}" listid="${listId}">
     ${listName}
     </button>
     </h2>
   <div id="flush-collapseOne_${listId}" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample_${listId}">
-  <div class="accordion-body">${listWords}</div>
+  <div class="accordion-body fs-5">${listWords}</div>
 </div>
 </div>
 </div>`;
@@ -139,7 +158,9 @@ const renderLists = () => {
         alert(data.error);
         return;
       }
-      showMyLists(data.Lists);
+
+      lists.push(...data.Lists);
+      showMyLists(lists);
     })
     .catch((error) => console.log(error));
 };
@@ -205,16 +226,112 @@ const clearPage = () => {
   unsolvedCards.splice(0, cards.length);
 };
 
+const changeListName = async (listId, newName) => {
+  return fetch(`http://localhost:3000/api/lists/${listId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json;charset=utf-8",
+      Authorization: localStorage.token,
+    },
+    body: JSON.stringify({
+      name: newName,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.error !== undefined) {
+        alert(data.error);
+        return;
+      }
+    })
+    .catch((error) => console.log(error));
+};
+
 const logout = () => {
   localStorage.removeItem("token");
   authorize();
   clearPage();
 };
 
+const save = async (newWords) => {
+  let removed = newWords.filter((word) => word.removed);
+  let updated = newWords.filter((word) => word.updated);
+  let created = newWords.filter((word) => word.created);
+
+  await removedSave(removed);
+  await updatedSave(updated);
+  await createdSave(created);
+};
+
+const removedSave = async (words) => {
+  for (let i = 0; i < words.length; i++) {
+    let response = await fetch(
+      `http://localhost:3000/api/lists/${words[i].ListId}/words/${words[i].id}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: localStorage.token,
+        },
+      }
+    );
+    let body = await response.json();
+    if (body.error !== undefined) {
+      alert(body.error);
+    }
+  }
+};
+
+const updatedSave = async (words) => {
+  for (let i = 0; i < words.length; i++) {
+    let response = await fetch(
+      `http://localhost:3000/api/lists/${words[i].ListId}/words/${words[i].id}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: localStorage.token,
+          "Content-Type": "application/json;charset=utf-8",
+        },
+        body: JSON.stringify({
+          wordParams: { word: words[i].word, meaning: words[i].meaning },
+        }),
+      }
+    );
+
+    let body = await response.json();
+    if (body.error !== undefined) {
+      alert(body.error);
+    }
+  }
+};
+
+const createdSave = async (words) => {
+  for (let i = 0; i < words.length; i++) {
+    let response = await fetch(
+      `http://localhost:3000/api/lists/${words[i].ListId}/words/`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: localStorage.token,
+          "Content-Type": "application/json;charset=utf-8",
+        },
+        body: JSON.stringify({
+          word: words[i].word,
+          meaning: words[i].meaning,
+        }),
+      }
+    );
+    let body = await response.json();
+    if (body.error !== undefined) {
+      alert(body.error);
+    }
+  }
+};
+
 myLists.addEventListener("click", (event) => {
-  loadCards(event.target.getAttribute("listid")).then(() => {
-    startLesson();
-  });
+  let listId = Number(event.target.getAttribute("listid"));
+  updateCurrentListIndex(listId);
+  currentListName.textContent = lists[currentListIndex].name;
+  requestWords(listId).then(setCards).then(startLesson);
 });
 allCards.addEventListener("click", () => {
   showCard();
@@ -233,7 +350,20 @@ myLists.addEventListener("mouseout", (event) => {
 logoutBtn.addEventListener("click", logout);
 learnAllBtn.addEventListener("click", startLesson);
 learnUnsolvedBtn.addEventListener("click", () => {
-  cards.splice(0, cards.length);
-  cards.push(...unsolvedCards);
+  setCards(unsolvedCards);
   startLesson();
+});
+editListBtn.addEventListener("click", () => {
+  requestWords(lists[currentListIndex].id).then((words) =>
+    editList(lists[currentListIndex], [...words], (newList, newWords) => {
+      save(newWords).then(() => {
+        requestWords(newList.id).then(setCards).then(startLesson);
+      });
+      changeListName(newList.id, newList.name).then(() => {
+        lists[currentListIndex].name = newList.name;
+        currentListName.textContent = newList.name;
+        showMyLists(lists);
+      });
+    })
+  );
 });
