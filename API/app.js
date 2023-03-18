@@ -76,13 +76,13 @@ app.use((request, response, next) => {
     response.status(403).json({ error: "Access denied" });
   }
 });
-// ------------------------------------------------------------- List----------------------------------------------------
+// -------------------------------------------------------------List----------------------------------------------------
 
 app.post("/api/lists", async (request, response) => {
   const { name } = request.body;
   const result = await db.CreateList(name, request.user.id);
   if (result) {
-    response.json({ status: "ok" });
+    response.json({ status: "ok", listId: result.id });
   } else {
     response.status(500).json({ error: "Impossible to create list" });
   }

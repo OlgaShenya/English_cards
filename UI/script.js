@@ -18,6 +18,8 @@ const learnAllBtn = document.getElementById("learnAllBtn");
 const learnUnsolvedBtn = document.getElementById("learnUnsolvedBtn");
 const editListBtn = document.getElementById("editListBtn");
 const currentListName = document.getElementById("currentListName");
+const createListBtn = document.getElementById("createListBtn");
+const contexMenu = document.getElementById("contexMenu");
 
 const lists = [];
 const cards = [];
@@ -49,8 +51,8 @@ const requestWords = async (listId) => {
 
 const startLesson = () => {
   genWord = cardSwitcher(cards);
-  getCard();
-  showCard();
+  getCard(); // взять(выложить) первую карту
+  showCard(); // рисует слова на карточке (HTML)
   solvedCards.innerHTML = "";
   unSolvedCards.innerHTML = "";
   cardsSolvedCount.textContent = "";
@@ -67,7 +69,7 @@ const setCards = (words) => {
 };
 
 /**
- * Загружает объект текущего листа в глобальную переменную currentListIndex
+ *  Сохраняет индекс текущего листа в глобальную переменную currentListIndex
  */
 const updateCurrentListIndex = (listId) => {
   currentListIndex = lists.findIndex((item) => {
@@ -91,10 +93,11 @@ const getCard = () => {
 };
 
 const showCard = () => {
+  // имя функции не отражает ее назначения
   if (!currentCard) {
     card.classList.add("d-none");
-    frontCard.innerHTML = "";
-    backCard.innerHTML = "";
+    frontCard.innerHTML = ""; // innerHTML должен применяться только для передачи HTML кода
+    backCard.innerHTML = ""; // для текста только textContent
     return;
   }
   card.classList.remove("d-none");
@@ -121,8 +124,8 @@ const createListNode = async (listId, listName) => {
     listWords += `${word.word}<br>`;
   });
   return `
-<div class="accordion accordion-flush" id="accordionFlushExample_${listId}">
-  <div class="accordion-item ">
+<div class="accordion accordion-flush" id="accordionFlushExample_${listId}" >
+  <div class="accordion-item "> 
     <h2 class="accordion-header " id="flush-headingOne ">
     <button class="accordion-button collapsed bg-success bg-opacity-10 fs-4 fw-semibold" type="button"  data-bs-target="#flush-collapseOne_${listId}"    aria-controls="flush-collapseOne_${listId}" listid="${listId}">
     ${listName}
@@ -145,8 +148,8 @@ const showMyLists = async (lists) => {
   myLists.innerHTML = liLists;
 };
 
-const renderLists = () => {
-  fetch("http://localhost:3000/api/lists", {
+const renderLists = async () => {
+  return fetch("http://localhost:3000/api/lists", {
     method: "GET",
     headers: {
       Authorization: localStorage.token,
@@ -224,6 +227,8 @@ const clearPage = () => {
   cardsUnsolvedCount.textContent = "";
   allCardsCount.textContent = "";
   unsolvedCards.splice(0, cards.length);
+  lists.splice(0, lists.length);
+  currentListName.textContent = "";
 };
 
 const changeListName = async (listId, newName) => {
@@ -249,89 +254,156 @@ const changeListName = async (listId, newName) => {
 
 const logout = () => {
   localStorage.removeItem("token");
-  authorize();
   clearPage();
+  authorize();
 };
 
-const save = async (newWords) => {
-  let removed = newWords.filter((word) => word.removed);
-  let updated = newWords.filter((word) => word.updated);
-  let created = newWords.filter((word) => word.created);
-
-  await removedSave(removed);
-  await updatedSave(updated);
-  await createdSave(created);
-};
-
-const removedSave = async (words) => {
-  for (let i = 0; i < words.length; i++) {
-    let response = await fetch(
-      `http://localhost:3000/api/lists/${words[i].ListId}/words/${words[i].id}`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: localStorage.token,
-        },
-      }
-    );
-    let body = await response.json();
-    if (body.error !== undefined) {
-      alert(body.error);
+const save = async (newWords, newList) => {
+  let editedListId = lists[currentListIndex].id;
+  const promises = newWords.map((word) => {
+    if (word.state === "deleted") {
+      return deletedSave(lists[currentListIndex].id, word);
     }
-  }
+    if (word.state === "updated") {
+      return updatedSave(lists[currentListIndex].id, word);
+    }
+    if (word.state === "created") {
+      return createdSave(lists[currentListIndex].id, word);
+    }
+  });
+
+  promises.push(changeListName(lists[currentListIndex].id, newList));
+
+  Promise.all(promises)
+    .then(() => {
+      clearPage();
+      renderLists() // запрос листов и отображение их; для каждого листа запрос слов и отображение их
+        .then(() => {
+          requestWords(editedListId) // запрос слов для редактируемого листа
+            .then(setCards) // выгрузка слов в массив cards
+            .then(startLesson)
+            .then(() => {
+              updateCurrentListIndex(editedListId);
+              currentListName.textContent = newList;
+            });
+        });
+    })
+    .catch((error) => alert(error));
 };
 
-const updatedSave = async (words) => {
-  for (let i = 0; i < words.length; i++) {
-    let response = await fetch(
-      `http://localhost:3000/api/lists/${words[i].ListId}/words/${words[i].id}`,
-      {
-        method: "PUT",
-        headers: {
-          Authorization: localStorage.token,
-          "Content-Type": "application/json;charset=utf-8",
-        },
-        body: JSON.stringify({
-          wordParams: { word: words[i].word, meaning: words[i].meaning },
-        }),
+const saveNewList = (newList, newWords) => {
+  fetch(`http://localhost:3000/api/lists`, {
+    method: "POST",
+    headers: {
+      Authorization: localStorage.token,
+      "Content-Type": "application/json;charset=utf-8",
+    },
+    body: JSON.stringify({ name: newList }),
+  })
+    .then((response) => response.json())
+    .then((body) => {
+      if (body.error !== undefined) {
+        alert(body.error);
       }
-    );
-
-    let body = await response.json();
-    if (body.error !== undefined) {
-      alert(body.error);
-    }
-  }
+      const newListId = body.listId;
+      return newListId;
+    })
+    .then((newListId) => {
+      const promises = newWords.map((word) => {
+        return createdSave(newListId, word);
+      });
+      Promise.all(promises).then(() => {
+        clearPage();
+        renderLists();
+      });
+    });
 };
 
-const createdSave = async (words) => {
-  for (let i = 0; i < words.length; i++) {
-    let response = await fetch(
-      `http://localhost:3000/api/lists/${words[i].ListId}/words/`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: localStorage.token,
-          "Content-Type": "application/json;charset=utf-8",
-        },
-        body: JSON.stringify({
-          word: words[i].word,
-          meaning: words[i].meaning,
-        }),
+const deletedSave = async (listId, word) => {
+  return fetch(`http://localhost:3000/api/lists/${listId}/words/${word.id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: localStorage.token,
+    },
+  })
+    .then((response) => response.json())
+    .then((body) => {
+      if (body.error !== undefined) {
+        alert(body.error);
       }
-    );
-    let body = await response.json();
-    if (body.error !== undefined) {
-      alert(body.error);
-    }
-  }
+    });
+};
+
+const updatedSave = async (listId, word) => {
+  return fetch(`http://localhost:3000/api/lists/${listId}/words/${word.id}`, {
+    method: "PUT",
+    headers: {
+      Authorization: localStorage.token,
+      "Content-Type": "application/json;charset=utf-8",
+    },
+    body: JSON.stringify({
+      wordParams: { word: word.word, meaning: word.meaning },
+    }),
+  })
+    .then((response) => response.json())
+    .then((body) => {
+      if (body.error !== undefined) {
+        alert(body.error);
+      }
+    });
+};
+
+const createdSave = async (listId, word) => {
+  return fetch(`http://localhost:3000/api/lists/${listId}/words/`, {
+    method: "POST",
+    headers: {
+      Authorization: localStorage.token,
+      "Content-Type": "application/json;charset=utf-8",
+    },
+    body: JSON.stringify({
+      word: word.word,
+      meaning: word.meaning,
+      studied: false,
+    }),
+  })
+    .then((response) => response.json())
+    .then((body) => {
+      if (body.error !== undefined) {
+        alert(body.error);
+      }
+    });
+};
+
+const deleteList = async (listId) => {
+  return fetch(`http://localhost:3000/api/lists/${listId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: localStorage.token,
+    },
+  })
+    .then((response) => response.json())
+    .then((body) => {
+      if (body.error !== undefined) {
+        alert(body.error);
+      }
+    });
 };
 
 myLists.addEventListener("click", (event) => {
+  frontCard.textContent = "";
+  backCard.textContent = "";
+  card.style.transition = "0s";
+  card.classList.remove("is-flipped");
+
   let listId = Number(event.target.getAttribute("listid"));
   updateCurrentListIndex(listId);
   currentListName.textContent = lists[currentListIndex].name;
-  requestWords(listId).then(setCards).then(startLesson);
+  requestWords(listId)
+    .then(setCards)
+    .then(startLesson)
+    .then(() => {
+      card.removeAttribute("style");
+    });
 });
 allCards.addEventListener("click", () => {
   showCard();
@@ -354,16 +426,36 @@ learnUnsolvedBtn.addEventListener("click", () => {
   startLesson();
 });
 editListBtn.addEventListener("click", () => {
-  requestWords(lists[currentListIndex].id).then((words) =>
-    editList(lists[currentListIndex], [...words], (newList, newWords) => {
-      save(newWords).then(() => {
-        requestWords(newList.id).then(setCards).then(startLesson);
-      });
-      changeListName(newList.id, newList.name).then(() => {
-        lists[currentListIndex].name = newList.name;
-        currentListName.textContent = newList.name;
-        showMyLists(lists);
-      });
-    })
-  );
+  if (currentListIndex !== -1) {
+    editList(lists[currentListIndex].name, cards, (newList, newWords) => {
+      let previousListName = lists[currentListIndex].name;
+      if (newWords.length || newList !== previousListName) {
+        save(newWords, newList);
+      }
+    });
+  }
+});
+
+createListBtn.addEventListener("click", () => {
+  editList("New List", [], (newList, newWords) => {
+    saveNewList(newList, newWords);
+  });
+});
+
+myLists.addEventListener("contextmenu", (event) => {
+  contexMenu.style.top = `${event.clientY}px`;
+  contexMenu.style.left = `${event.clientX}px`;
+  contexMenu.style.visibility = "visible";
+  event.preventDefault();
+  // console.log(event.target);
+  contexMenu.setAttribute("listid", event.target.getAttribute("listid"));
+});
+
+contexMenu.addEventListener("click", (event) => {
+  contexMenu.style.visibility = "hidden";
+  // console.log(event.target.getAttribute("listid"));
+  deleteList(event.target.getAttribute("listid")).then(() => {
+    clearPage();
+    renderLists();
+  });
 });

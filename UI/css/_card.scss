@@ -23,12 +23,7 @@ $textColor: rgb(5, 98, 5);
     color: $textColor;
 }
 
-.card__face-front {
-    // background: red;
-}
-
 .card__face-back {
-    // background: blue;
     transform: rotateY( 180deg );
 }
 

@@ -90,11 +90,11 @@ module.exports.UpdateUser = async (login, password) => {
 module.exports.CreateList = async (listName, userId) => {
   try {
     await User.sync();
-    await List.create({
+    let list = await List.create({
       name: listName,
       UserId: userId,
     });
-    return true;
+    return list;
   } catch (error) {
     logger.error(error);
     return false;
