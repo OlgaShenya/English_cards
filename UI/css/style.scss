@@ -3,6 +3,7 @@
 @import "_card.scss";
 @import "_counter.scss";
 @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css");
+// @import url("_sidebar.scss");
 
 
 
@@ -21,16 +22,128 @@ body {
 
 #contexMenu{
     position: absolute;
-    visibility: hidden;
-    width: 150px;
-    height: 50px;
+    display: none;
+    width: 120px;
+    height: 30px;
     border: 1px solid black;
-    background-color: white;
+    background-color: rgb(235,245,240);
     text-align: center;
-    line-height: 50px;
+    line-height: 30px;
     z-index: 110;
-    border-bottom-right-radius: 50%;
-    border-bottom-left-radius: 70%;
-    border-top-right-radius: 70%;
+    border-bottom-right-radius: 20px;
+    border-bottom-left-radius: 20px;
+    border-top-right-radius: 20px;
     box-shadow: 5px 5px 5px gray;
+}
+
+aside{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    // border: 1px dotted blue;
+    z-index: 100;
+}
+
+nav{
+    // border: 1px solid black;
+    display: flex;
+    flex-direction: column;
+    row-gap: 5px;
+    height: 100%;
+    // width: 33%;
+    width: 100%;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.navwrapper::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .navwrapper {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+.navwrapper{
+    // border: 1px solid red;
+    height: 90%;
+    // width: 300%;
+    overflow-y: auto;
+}
+
+:root {
+    --bubble-color: rgb(25,135,84);
+    --list-color: rgb(25,135,84);
+    --sidebar-color: rgb(202, 209, 202);
+    --main-color: rgb(224, 224, 224);
+    --shadow-color: grey;
+  }
+
+.listitem{
+    height: 40px;
+    background-color: var(--list-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    border-radius: 5px;
+    padding: 0 3px;
+}
+
+.listitem div {
+    width: 100%;
+    text-align: center;
+}
+
+.listitem:hover .wordlist {
+    display: block;
+}
+
+.navwrapper:has(.listitem:hover){
+    width: 300%;
+    // border: 1px solid yellow;
+}
+
+nav:has(.listitem:hover) {
+    width: 33.3%;
+}
+
+.wordlist{
+    display: none;
+    width: 90%;
+    min-height: 30px;
+    background-color: var(--bubble-color);
+    position: absolute;
+    left: 106%;
+    top: 50%;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+    border-bottom-left-radius: 20px;
+    padding: 10px 20px;
+    box-shadow: 5px 5px 7px var(--shadow-color);
+}
+
+.wordlist::before,
+.wordlist::after {
+  content: "";
+  height: 1rem;
+  top: 1px;
+  position: absolute;
+}
+
+.wordlist::before {
+    border-top-right-radius: .9rem .2rem;
+    border-left: 1rem solid var(--bubble-color);
+    left: -0.6rem;
+    transform: translate(0, -0.1rem);
+}
+
+.wordlist::after {
+    background-color: rgb(235,245,240);
+    border-top-right-radius: 0.5rem;
+    left: 1.9rem;
+    transform: translate(-35px, -1px);
+    width: 8px;
 }

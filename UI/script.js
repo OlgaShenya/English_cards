@@ -124,17 +124,14 @@ const createListNode = async (listId, listName) => {
     listWords += `${word.word}<br>`;
   });
   return `
-<div class="accordion accordion-flush" id="accordionFlushExample_${listId}" >
-  <div class="accordion-item "> 
-    <h2 class="accordion-header " id="flush-headingOne ">
-    <button class="accordion-button collapsed bg-success bg-opacity-10 fs-4 fw-semibold" type="button"  data-bs-target="#flush-collapseOne_${listId}"    aria-controls="flush-collapseOne_${listId}" listid="${listId}">
+  <div class="listitem">
+  <div
+    class="bg-success bg-opacity-10 fs-4 fw-semibold"
+    listid="${listId}"
+  >
     ${listName}
-    </button>
-    </h2>
-  <div id="flush-collapseOne_${listId}" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample_${listId}">
-  <div class="accordion-body fs-5">${listWords}</div>
-</div>
-</div>
+  </div>
+  <div class="wordlist">${listWords}</div>
 </div>`;
 };
 
@@ -390,30 +387,35 @@ const deleteList = async (listId) => {
 };
 
 myLists.addEventListener("click", (event) => {
-  frontCard.textContent = "";
-  backCard.textContent = "";
-  card.style.transition = "0s";
-  card.classList.remove("is-flipped");
+  if (event.target.hasAttribute("listid")) {
+    frontCard.textContent = "";
+    backCard.textContent = "";
+    card.style.transition = "0s";
+    card.classList.remove("is-flipped");
 
-  let listId = Number(event.target.getAttribute("listid"));
-  updateCurrentListIndex(listId);
-  currentListName.textContent = lists[currentListIndex].name;
-  requestWords(listId)
-    .then(setCards)
-    .then(startLesson)
-    .then(() => {
-      card.removeAttribute("style");
-    });
+    let listId = Number(event.target.getAttribute("listid"));
+    updateCurrentListIndex(listId);
+    currentListName.textContent = lists[currentListIndex].name;
+    requestWords(listId)
+      .then(setCards)
+      .then(startLesson)
+      .then(() => {
+        card.removeAttribute("style");
+      });
+  }
 });
+
 allCards.addEventListener("click", () => {
   showCard();
   if (currentCard) card.classList.toggle("is-flipped");
 });
+
 myLists.addEventListener("mouseover", (event) => {
   const target = event.target.parentElement.nextElementSibling;
   if (!target) return;
   target.classList.add("show");
 });
+
 myLists.addEventListener("mouseout", (event) => {
   const target = event.target.parentElement.nextElementSibling;
   if (!target) return;
@@ -425,13 +427,16 @@ learnUnsolvedBtn.addEventListener("click", () => {
   setCards(unsolvedCards);
   startLesson();
 });
+
 editListBtn.addEventListener("click", () => {
   if (currentListIndex !== -1) {
-    editList(lists[currentListIndex].name, cards, (newList, newWords) => {
-      let previousListName = lists[currentListIndex].name;
-      if (newWords.length || newList !== previousListName) {
-        save(newWords, newList);
-      }
+    requestWords(lists[currentListIndex].id).then((words) => {
+      editList(lists[currentListIndex].name, words, (newList, newWords) => {
+        let previousListName = lists[currentListIndex].name;
+        if (newWords.length || newList !== previousListName) {
+          save(newWords, newList);
+        }
+      });
     });
   }
 });
@@ -445,17 +450,21 @@ createListBtn.addEventListener("click", () => {
 myLists.addEventListener("contextmenu", (event) => {
   contexMenu.style.top = `${event.clientY}px`;
   contexMenu.style.left = `${event.clientX}px`;
-  contexMenu.style.visibility = "visible";
+  contexMenu.style.display = "block";
   event.preventDefault();
   // console.log(event.target);
   contexMenu.setAttribute("listid", event.target.getAttribute("listid"));
 });
 
 contexMenu.addEventListener("click", (event) => {
-  contexMenu.style.visibility = "hidden";
+  contexMenu.style.display = "none";
   // console.log(event.target.getAttribute("listid"));
   deleteList(event.target.getAttribute("listid")).then(() => {
     clearPage();
     renderLists();
   });
+});
+
+document.addEventListener("click", () => {
+  contexMenu.style.display = "none";
 });

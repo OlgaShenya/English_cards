@@ -1,0 +1,58 @@
+:root {
+    --bubble-color: rgb(216, 171, 111);
+    --list-color: rgb(78, 118, 82);
+    --sidebar-color: rgb(202, 209, 202);
+    --main-color: rgb(224, 224, 224);
+    --shadow-color: grey;
+  }
+
+.listitem{
+    height: 40px;
+    background-color: var(--bs-success-rgb);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.listitem:hover .wordlist {
+    display: block;
+}
+
+.wordlist{
+    display: none;
+    width: 100%;
+    height: 300px;
+    background-color: var(--bubble-color);
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+    border-bottom-left-radius: 20px;
+    padding: 5px;
+    box-shadow: 0 0 7px var(--shadow-color);
+}
+
+.wordlist::before,
+.wordlist::after {
+  content: "";
+  height: 1rem;
+  top: -1px;
+  position: absolute;
+}
+
+.wordlist::before {
+    border-top-right-radius: .9rem .2rem;
+    border-left: 1rem solid var(--bubble-color);
+    left: -0.6rem;
+    transform: translate(0, -0.1rem);
+}
+
+.wordlist::after {
+    background-color: var(--bs-success-rgb);
+    border-top-right-radius: 0.5rem;
+    left: 1.57rem;
+    transform: translate(-35px, -1px);
+    width: 10px;
+}
