@@ -1,190 +1,73 @@
-const logger = require("./logger").app;
-const db = require("./db/db");
 const express = require("express");
-const app = express();
 const jwt = require("jsonwebtoken");
-const { dirname } = require("path");
-const appDir = dirname(require.main.filename);
 const cors = require("cors");
-app.use(cors());
+const dotenv = require("dotenv");
+const path = require("path");
+const logger = require("./logger").app;
+const { initSwagger } = require('./swagger');
+const swaggerUi = require('swagger-ui-express');
+const swaggerFile = require('./swagger.json');
 
-const signature = "MySuP3R_z3kr3t";
-
-app.use(express.json());
-// ----------------------------------------------------------User-----------------------------------------------------
-app.post("/api/users", async (request, response) => {
-  const { login, password } = request.body;
-  const result = await db.CreateUser(login, password);
-  if (result) {
-    response.json({ status: "ok" });
-  } else {
-    response.status(409).json({ error: "Login is occupied" });
-  }
+// !Important
+// Load the env variables with dotenv before starting to work with the config files!
+dotenv.config({
+  path: path.resolve(__dirname, process.env.NODE_ENV + '.env')
 });
 
-app.post("/api/auth", async (request, response) => {
-  const { login, password } = request.body;
-  const user = await db.GetUser(login, password);
-  if (user === null) {
-    response.status(401).json({ error: "Incorrect login or password" });
-    return;
-  }
-  const token = jwt.sign(user, signature);
-  response.json({ token: token });
-});
+const db = require("./db/db");
+const { mountRoutes } = require('./routes/index');
+const { server: config } = require("./config/server");
+const { signature } = require("./config/jwt");
 
-app.put("/api/users", async (request, response) => {
-  const { login, password, newPassword } = request.body;
-  const user = await db.GetUser(login, password);
-  if (user === null) {
-    response.status(401).json({ error: "Incorrect login or password" });
-    return;
-  }
-  const result = await db.UpdateUser(login, newPassword);
-  if (result) {
-    response.json({ status: "ok" });
-  } else {
-    response.status(500).json({ error: "Impossible to update" });
-  }
-});
+const appDir = path.dirname(require.main.filename);
 
-app.delete("/api/users", async (request, response) => {
-  const { login, password } = request.body;
-  const user = await db.GetUser(login, password);
-  if (user === null) {
-    response.status(401).json({ error: "Incorrect login or password" });
-    return;
-  }
-  const result = await db.DeleteUser(login, password);
-  if (result) {
-    response.json({ status: "ok" });
-  } else {
-    response.status(500).json({ error: "Impossible to delete" });
-  }
-});
-
-app.use((request, response, next) => {
-  if (!request.headers.authorization) {
-    response.status(403).json({ error: "not authorized" });
-    return;
-  }
-  try {
-    request.user = jwt.verify(request.headers.authorization, signature);
-    next();
-  } catch (error) {
-    logger.debug(error);
-    response.status(403).json({ error: "Access denied" });
-  }
-});
-// -------------------------------------------------------------List----------------------------------------------------
-
-app.post("/api/lists", async (request, response) => {
-  const { name } = request.body;
-  const result = await db.CreateList(name, request.user.id);
-  if (result) {
-    response.json({ status: "ok", listId: result.id });
-  } else {
-    response.status(500).json({ error: "Impossible to create list" });
-  }
-});
-
-app.get("/api/lists", async (request, response) => {
-  const lists = await db.GetLists(request.user.id);
-  if (lists) {
-    response.json({ Lists: lists });
-  } else {
-    response.status(500).json({ error: "Impossible to get list" });
-  }
-});
-
-const verify = async (request, response, next) => {
-  const { listId, wordId } = request.params;
-  const list = await db.GetList(listId);
-  if (!list || list.UserId != request.user.id) {
-    response.status(406).json({ error: "Requested list is not found" });
-    return;
-  }
-  if (wordId) {
-    const word = await db.GetWord(wordId);
-    if (!word || word.ListId != list.id) {
-      response.status(406).json({ error: "Requested word is not found" });
-      return;
-    }
-  }
-  next();
+const swaggerOptions = {
+  basePath: config.apiPrefix,
+  host: `${config.host}:${config.port}`,
 };
 
-app.put("/api/lists/:listId", verify, async (request, response) => {
-  const result = await db.RenameList(request.params.listId, request.body.name);
-  if (result) {
-    response.json({ status: "ok" });
-  } else {
-    response.status(500).json({ error: "Impossible to rename list" });
-  }
-});
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-app.delete("/api/lists/:listId", verify, async (request, response) => {
-  const result = await db.DeleteList(request.params.listId);
-  if (result) {
-    response.json({ status: "ok" });
-  } else {
-    response.status(500).json({ error: "Impossible to delete list" });
-  }
-});
-// -----------------------------------------------------------------------words--------------------------------------------------
+const router = express.Router();
 
-app.post("/api/lists/:listId/words", verify, async (request, response) => {
-  const { word, meaning, studied } = request.body;
-  const result = await db.CreateWord(
-    word,
-    meaning,
-    studied,
-    request.params.listId
-  );
-  if (result) {
-    response.json({ status: "ok" });
-  } else {
-    response.status(500).json({ error: "Impossible to create word" });
+router.use((request, response, next) => {
+  if (request.path === config.pingUrl || request.path.startsWith(config.swaggerUrl)) {
+    next();
   }
-});
-
-app.get("/api/lists/:listId/words", verify, async (request, response) => {
-  const words = await db.GetWords(request.params.listId);
-  if (words) {
-    response.json({ Words: words });
-  } else {
-    response.status(500).json({ error: "Impossible to get words" });
+  else if (['/users', '/auth'].includes(request.path) && request.method === 'POST') {
+    next();
   }
-});
-
-app.put(
-  "/api/lists/:listId/words/:wordId",
-  verify,
-  async (request, response) => {
-    const result = await db.UpdateWord(
-      request.params.wordId,
-      request.body.wordParams
-    );
-    if (result) {
-      response.json({ status: "ok" });
-    } else {
-      response.status(500).json({ error: "Impossible to change word" });
+  else {
+    if (!request.headers.authorization) {
+      response.status(403).json({ error: "not authorized" });
+      return;
     }
+    try {
+      request.user = jwt.verify(request.headers.authorization, signature);
+      next();
+    } catch (error) {
+      logger.debug(error);
+      response.status(403).json({ error: "Access denied" });
+    }    
   }
-);
+});
 
-app.delete(
-  "/api/lists/:listId/words/:wordId",
-  verify,
-  async (request, response) => {
-    const result = await db.DeleteWord(request.params.wordId);
-    if (result) {
-      response.json({ status: "ok" });
-    } else {
-      response.status(500).json({ error: "Impossible to delete word" });
-    }
-  }
-);
-//*********************************************************************************** */
+// enable swagger only for dev mode
+if (process.env.NODE_ENV !== 'production') {
+  // autogenerate swagger definitions from the API routes
+  initSwagger(swaggerOptions);
 
-app.listen(3000, () => console.log("working..."));
+  // add swagger service to the router
+  router.use(config.swaggerUrl, swaggerUi.serve, swaggerUi.setup(swaggerFile));
+}
+
+mountRoutes(router);
+app.use(config.apiPrefix, router);
+
+app.listen(config.port, config.host,
+  () => {
+    console.log(`Test the server: http://${config.host}:${config.port}${config.apiPrefix}${config.pingUrl}`);
+    console.log(`See API docs: http://${config.host}:${config.port}${config.apiPrefix}${config.swaggerUrl}`);
+  });

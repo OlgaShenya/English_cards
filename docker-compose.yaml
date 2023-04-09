@@ -1,0 +1,81 @@
+version: "2.2"
+services:
+  db:
+    # you need to create an account at docker hub and then use login to hub repository using docker login
+    image: postgres:latest
+    container_name: cards_db
+    restart: always
+    command: 'postgres -c max_connections=9999'
+    env_file:
+      - API/development.env
+    ports:
+      #local_machine_port : docker_network_port
+      - 54320:5432
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      card_backend:
+        ipv4_address: 192.168.4.2
+    logging:
+      driver: 'json-file'
+      options:
+        max-file: '2'
+        max-size: 750m
+  api:
+    build:
+      context: ./API
+      dockerfile: ./Dockerfile
+    container_name: cards_api
+    restart: always
+    # command: 'npm run start:dev'
+    env_file:
+      - API/development.env
+    ports:
+      - 3000:3000
+    networks:
+      card_backend:
+        ipv4_address: 192.168.4.5
+    depends_on:
+      - db
+    # the volumes are created to map the local folder './API' to the files in the container
+    # it will cause the container image to be updated when we update the files locally 
+    volumes:
+      - ./API:/usr/src/app
+      - /usr/src/app/node_modules
+    logging:
+      driver: 'json-file'
+      options:
+        max-file: '2'
+        max-size: 750m
+
+  frontend:
+      container_name: cards_frontend
+      image: nginx:latest
+      # the volumes are created to map the local folder './UI' to the files in the container
+      # thus we automatically copy all the files into the nginx server storage
+      # it will cause the container image to be updated when we update the files locally 
+      volumes:
+        - ./UI:/usr/share/nginx/html
+      ports:
+        - 38080:80
+      networks:
+        card_backend:
+          ipv4_address: 192.168.4.4
+      depends_on:
+        - api
+        - db
+    
+networks:
+  card_backend:
+    name: card_backend
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.4.0/24
+          gateway: 192.168.4.1
+
+volumes:
+  db-data:
+    external:
+      name: db-data
