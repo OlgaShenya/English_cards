@@ -1,15 +1,13 @@
 const logger = require("../logger").app;
 const loggerSql = require("../logger").sql;
-const { Sequelize, DataTypes } = require("sequelize");
-const config = require("config").DataBase;
-
-config.options.logging = (msg) => loggerSql.debug(msg);
+const { Sequelize } = require("sequelize");
+const { database } = require("../config/database");
 
 const sequelize = new Sequelize(
-  config.name,
-  config.user,
-  config.password,
-  config.options
+  {
+    ...database,
+    logging: (msg) => loggerSql.debug(msg)
+  }
 );
 
 const User = require("./models/users")(sequelize);

@@ -32,12 +32,14 @@ const signinButton = document.getElementById("signin");
 const signupButton = document.getElementById("signup");
 const authForm = new bootstrap.Modal(document.getElementById("auth_form"));
 
+//TODO - move into .env file
+const apiUrl = 'http://192.168.4.5:3000/api';
 let afterAuth = null;
 
 const handleSignin = () => {
   let pass = passwordInput.value;
   passwordInput.value = "";
-  fetch("http://localhost:3000/api/auth", {
+  fetch(`${apiUrl}/auth`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json;charset=utf-8",
@@ -62,7 +64,7 @@ const handleSignin = () => {
 };
 
 const handleSignup = () => {
-  fetch("http://localhost:3000/api/users", {
+  fetch(`${apiUrl}/users`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json;charset=utf-8",

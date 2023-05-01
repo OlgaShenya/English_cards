@@ -2,6 +2,9 @@ import { authInit, authorize } from "./auth.js";
 import { editList } from "./editList.js";
 // import { Card } from "./card.js";
 
+//TODO - move into .env file
+const apiUrl = 'http://192.168.4.5:3000/api';
+
 const myLists = document.getElementById("myLists");
 const allCards = document.getElementById("allCards");
 const frontCard = document.getElementById("frontCard");
@@ -31,7 +34,7 @@ const unsolvedCards = [];
 const requestWords = async (listId) => {
   try {
     const response = await fetch(
-      `http://localhost:3000/api/lists/${listId}/words`,
+      `${apiUrl}/lists/${listId}/words`,
       {
         method: "GET",
         headers: {
@@ -146,7 +149,7 @@ const showMyLists = async (lists) => {
 };
 
 const renderLists = async () => {
-  return fetch("http://localhost:3000/api/lists", {
+  return fetch(`${apiUrl}/lists`, {
     method: "GET",
     headers: {
       Authorization: localStorage.token,
@@ -229,7 +232,7 @@ const clearPage = () => {
 };
 
 const changeListName = async (listId, newName) => {
-  return fetch(`http://localhost:3000/api/lists/${listId}`, {
+  return fetch(`${apiUrl}/lists/${listId}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json;charset=utf-8",
@@ -289,7 +292,7 @@ const save = async (newWords, newList) => {
 };
 
 const saveNewList = (newList, newWords) => {
-  fetch(`http://localhost:3000/api/lists`, {
+  fetch(`${apiUrl}/lists`, {
     method: "POST",
     headers: {
       Authorization: localStorage.token,
@@ -317,7 +320,7 @@ const saveNewList = (newList, newWords) => {
 };
 
 const deletedSave = async (listId, word) => {
-  return fetch(`http://localhost:3000/api/lists/${listId}/words/${word.id}`, {
+  return fetch(`${apiUrl}/lists/${listId}/words/${word.id}`, {
     method: "DELETE",
     headers: {
       Authorization: localStorage.token,
@@ -332,7 +335,7 @@ const deletedSave = async (listId, word) => {
 };
 
 const updatedSave = async (listId, word) => {
-  return fetch(`http://localhost:3000/api/lists/${listId}/words/${word.id}`, {
+  return fetch(`${apiUrl}/lists/${listId}/words/${word.id}`, {
     method: "PUT",
     headers: {
       Authorization: localStorage.token,
@@ -351,7 +354,7 @@ const updatedSave = async (listId, word) => {
 };
 
 const createdSave = async (listId, word) => {
-  return fetch(`http://localhost:3000/api/lists/${listId}/words/`, {
+  return fetch(`${apiUrl}/lists/${listId}/words/`, {
     method: "POST",
     headers: {
       Authorization: localStorage.token,
@@ -372,7 +375,7 @@ const createdSave = async (listId, word) => {
 };
 
 const deleteList = async (listId) => {
-  return fetch(`http://localhost:3000/api/lists/${listId}`, {
+  return fetch(`${apiUrl}/lists/${listId}`, {
     method: "DELETE",
     headers: {
       Authorization: localStorage.token,
